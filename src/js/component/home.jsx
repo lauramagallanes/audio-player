@@ -4,12 +4,13 @@ import React, { useState, useEffect, useRef } from "react";
 //create your first component
 const Home = () => {
 
-	// const [song, setSong] = useState(null);
+	
 	const [listaSongs, setListaSongs] = useState([]); //listaSongs es mi array donde tengo cada cancion
 	let startSong = useRef(null);
 	console.log(startSong);
-	// let i=0;
+	
 	let [positionSong, setPositionSong] = useState(0);
+	let [songName, setSongName] = useState("");
 
 	function getSongs() {
 		fetch("https://assets.breatheco.de/apis/sound/songs")
@@ -24,7 +25,8 @@ const Home = () => {
 			.catch((err) => console.log(err))
 
 	}
-// let startSong = ""
+
+	//funcion para reproducir canciones
 	function reproducir(url, id){
 
 		if(startSong.current.paused){
@@ -36,38 +38,56 @@ const Home = () => {
 			console.log("Esta en play");
 
 		}
-		
-		
+				
 		setPositionSong(id-1);
-		
-						
+		getSongName();
+				
 	}
 
+	//funcion para obtener el valor del nombre de la cancion que se este reproduciendo
+	function getSongName() {
+		let filteredSong = listaSongs.filter(item => item.id === positionSong+1);	
+		let filteredSongObject = filteredSong[0];
+		// console.log(filteredSongObject.name);
+		setSongName(filteredSongObject.name);
+
+	}
+	
 	function forward(){
-		setPositionSong(positionSong++);
+		setPositionSong(positionSong+1);
 		startSong.current.src = `https://assets.breatheco.de/apis/sound/${listaSongs[positionSong].url}`;
 		console.log(startSong.current.src);
-		startSong.current.play()
+		startSong.current.play();
+		getSongName();
 	}
 
 	function backward(){
-		setPositionSong(positionSong--)
+		setPositionSong(positionSong-1)
 		startSong.current.src = `https://assets.breatheco.de/apis/sound/${listaSongs[positionSong].url}`;
 		console.log(startSong.current.src);
-		startSong.current.play()
+		startSong.current.play();
+		getSongName();
 	}
 		
 	useEffect(() => {
 		getSongs();
 				
 	}, [])
+	
 
 
 	return (
-		<div className="container bg-dark">
-			<div className="row">
+		<div className="container bg-dark vh-100 vw-100">
+			<h1 className="text-white text-center">Choose your song</h1>
+			<div className="row" style={{
+    height: '500px',
+    width: '100%',
+    overflow: 'auto',
+	marginTop: '80px'
+  }}>
+	
 				
-					{listaSongs.map((item) => <button className="btn btn-dark text-start" type="button" key={item.id} onClick={()=> reproducir(item.url, item.id)}>{item.id} ---- {item.name}</button>)}
+					{listaSongs.map((item, index) => <button className="btn btn-dark text-start" type="button" key={index} onClick={()=> reproducir(item.url, item.id)}>{item.id} ---- {item.name}</button>)}
 				
 			</div>
 
@@ -77,6 +97,7 @@ const Home = () => {
 					Your browser does not support the audio tag.
 				</audio><button type="button" className="btn btn-info btn-lg" onClick={() => forward(positionSong)}><i className="fa fa-forward"></i></button>
 			</div>
+			<h2 className="text-white text-center">{songName}</h2>
 			
 		</div>
 	);
